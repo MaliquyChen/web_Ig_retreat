@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <rect width="600" height="600" fill="#0f172a"/>
+  <rect x="50" y="50" width="500" height="500" rx="16" fill="#1e293b" stroke="#38bdf8" stroke-width="4"/>
+  <text x="90" y="140" font-family="'Courier New', monospace" font-size="28" fill="#38bdf8">&gt; INITIALIZING_EVENT_FEED...</text>
+  <text x="90" y="200" font-family="'Courier New', monospace" font-size="24" fill="#4ade80">&gt; STATUS: OK [200]</text>
+  <text x="90" y="260" font-family="'Courier New', monospace" font-size="24" fill="#f43f5e">&gt; ENCRYPTION: ACTIVE</text>
+  <text x="90" y="320" font-family="'Courier New', monospace" font-size="24" fill="#e2e8f0">&gt; SCANNING QR CODES...</text>
+  <circle cx="300" cy="430" r="45" fill="#38bdf8" opacity="0.2"/>
+  <circle cx="300" cy="430" r="25" fill="#38bdf8"/>
+</svg>

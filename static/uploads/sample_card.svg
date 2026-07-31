@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="cardG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#833ab4"/>
+      <stop offset="100%" stop-color="#fd1d1d"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#cardG)"/>
+  <polygon points="300,100 450,300 300,500 150,300" fill="#ffffff" opacity="0.9"/>
+  <text x="300" y="315" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="90" fill="#fd1d1d" text-anchor="middle">🃏</text>
+  <text x="300" y="550" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="32" font-weight="bold" fill="#ffffff" text-anchor="middle">THE PHANTOM STRIKES</text>
+</svg>

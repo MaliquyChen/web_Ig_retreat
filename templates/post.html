@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>建立新貼文 - {{ character.name }}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <nav class="app-navbar">
+    <div class="navbar-container">
+      <a href="/" class="brand-logo">
+        <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        <span>建立新貼文</span>
+      </a>
+      <div class="nav-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要內容區 -->
+  <main class="main-wrapper">
+    
+    <!-- 快速切換角色 BAR -->
+    <div class="character-bar-wrapper">
+      <div class="character-bar-title">切換掃描角色：</div>
+      <div class="character-list">
+        {% for cid, char in characters.items() %}
+        <a href="/post?character_id={{ cid }}" class="character-chip {% if cid == character.id %}active{% endif %}">
+          <div class="avatar-ring">
+            <img src="{{ char.avatar }}" alt="{{ char.name }}" class="avatar-img">
+          </div>
+          <span class="chip-name">{{ char.name }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 發文卡片 (模擬 IG 介面) -->
+    <div class="post-card">
+      <div class="post-card-header">
+        <div class="character-info-sm">
+          <img src="{{ character.avatar }}" alt="{{ character.name }}" class="avatar-sm">
+          <div class="char-title-sm">
+            <span class="char-name-sm">{{ character.name }}</span>
+            <span class="char-handle-sm">{{ character.handle }}</span>
+          </div>
+        </div>
+        <span class="auto-refresh-indicator">
+          <span class="pulse-dot"></span> 現場連線中
+        </span>
+      </div>
+
+      <!-- 表單 -->
+      <form id="igPostForm" class="post-form-body" enctype="multipart/form-data">
+        <input type="hidden" name="character_id" value="{{ character.id }}">
+
+        <!-- 成功提示訊息 -->
+        <div id="successBanner" class="success-banner">
+          🎉 貼文發布成功！可至現場大螢幕即時查看！
+        </div>
+
+        <!-- 圖片上傳區塊 -->
+        <div class="image-upload-dropzone" id="imageDropzone">
+          <button type="button" class="remove-photo-btn" id="removePhotoBtn" title="移除照片">✕</button>
+          
+          <img id="imagePreview" class="image-preview" alt="預覽照片">
+
+          <div class="dropzone-prompt" id="dropzonePrompt">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <p style="font-weight: 600; font-size: 1.05rem;">點擊選擇照片或拍照</p>
+            <p style="font-size: 0.8rem;">支援現場拍照或從相簿選擇</p>
+          </div>
+
+          <input type="file" name="image" id="imageFileInput" class="file-input" accept="image/*" capture="environment">
+        </div>
+
+        <!-- 貼文內文輸入區 -->
+        <div class="caption-group">
+          <textarea id="captionTextarea" name="caption" class="caption-textarea" placeholder="撰寫內文或輸入線索說明..."></textarea>
+          
+          <!-- 快捷 Hashtag 標籤按鈕 -->
+          <div class="hashtag-pills">
+            <button type="button" class="pill-btn" data-tag="#活動現場2026">#活動現場2026</button>
+            <button type="button" class="pill-btn" data-tag="#關鍵線索">#關鍵線索</button>
+            <button type="button" class="pill-btn" data-tag="#VIP通關">#VIP通關</button>
+            <button type="button" class="pill-btn" data-tag="#解密成功">#解密成功</button>
+          </div>
+        </div>
+
+        <!-- 送出按鈕 -->
+        <button type="submit" id="submitBtn" class="btn-primary form-submit-btn">
+          分享
+        </button>
+      </form>
+    </div>
+
+    <!-- 連結至大螢幕 -->
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="/screen?character_id={{ character.id }}" class="btn-secondary" style="display: inline-block;">
+        🖥️ 查看 {{ character.name }} 的現場大螢幕
+      </a>
+    </div>
+
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

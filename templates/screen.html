@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ current_character.name }} - Instagram 個人檔案牆</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <nav class="app-navbar">
+    <div class="navbar-container">
+      <a href="/" class="brand-logo">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        <span>Instagram 個人檔案</span>
+      </a>
+      <div class="nav-actions">
+        <span class="auto-refresh-indicator">
+          <span class="pulse-dot"></span> 即時同步中 (10s)
+        </span>
+        <button id="themeToggleBtn" class="theme-toggle-btn">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要內容區 -->
+  <main class="main-wrapper">
+
+    <!-- 角色視角切換列 -->
+    <div class="character-bar-wrapper">
+      <div class="character-bar-title">選擇個人檔案視角：</div>
+      <div class="character-list">
+        {% for cid, char in characters.items() %}
+        <a href="/screen?character_id={{ cid }}" class="character-chip {% if cid == current_character.id %}active{% endif %}">
+          <div class="avatar-ring">
+            <img src="{{ char.avatar }}" alt="{{ char.name }}" class="avatar-img">
+          </div>
+          <span class="chip-name">{{ char.name }}</span>
+        </a>
+        {% endfor %}
+        <a href="/screen?character_id=all" class="character-chip {% if request.args.get('character_id') == 'all' %}active{% endif %}">
+          <div class="avatar-ring" style="background: var(--ig-gradient);">
+            <div style="width:100%; height:100%; border-radius:50%; background:var(--bg-surface); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">🌐</div>
+          </div>
+          <span class="chip-name">全場貼文</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- IG 個人檔案標頭 (PROFILE HEADER) -->
+    <header class="profile-header">
+      <div class="profile-avatar-large">
+        <img src="{{ current_character.avatar }}" alt="{{ current_character.name }}">
+      </div>
+      
+      <div class="profile-details">
+        <div class="profile-title-row">
+          <h1 class="profile-handle">{{ current_character.handle }}</h1>
+          <div class="profile-actions">
+            <a href="/post?character_id={{ current_character.id }}" class="btn-primary">
+              📱 建立新貼文
+            </a>
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="stat-number" id="statPostCount">0</span>
+            <span class="stat-label">貼文</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ current_character.followers }}</span>
+            <span class="stat-label">粉絲</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ current_character.following }}</span>
+            <span class="stat-label">追蹤中</span>
+          </div>
+        </div>
+
+        <div class="profile-bio">
+          <div class="profile-name">{{ current_character.name }}</div>
+          <div class="profile-bio-text">{{ current_character.bio }}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 貼文分頁 -->
+    <div class="feed-tabs">
+      <div class="feed-tab active">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14h7v7H3z"/>
+        </svg>
+        貼文
+      </div>
+    </div>
+
+    <!-- 貼文九宮格 (動態載入 & 自動更新) -->
+    <div id="postsGrid" class="posts-grid" data-character-id="{{ request.args.get('character_id', 'char_1') }}">
+      <!-- 貼文項目由 app.js 動態渲染 -->
+    </div>
+
+  </main>
+
+  <!-- 放大檢視燈箱 (MODAL) -->
+  <div id="imageModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="modalCloseBtn">✕</button>
+
+      <div class="modal-image-col">
+        <img id="modalImage" src="" alt="高清貼文圖片">
+      </div>
+
+      <div class="modal-info-col">
+        <div class="modal-header">
+          <div class="character-info-sm">
+            <img id="modalAvatar" src="" class="avatar-sm" alt="頭像">
+            <div class="char-title-sm">
+              <span id="modalName" class="char-name-sm"></span>
+              <span id="modalHandle" class="char-handle-sm"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <p id="modalCaption" class="modal-caption"></p>
+        </div>
+
+        <div class="modal-footer">
+          <div class="modal-footer-row">
+            <div class="modal-action-icons">
+              <button id="modalLikeBtn" class="like-btn" title="按讚">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <span id="modalLikesCount">0</span> 個讚
+              </button>
+            </div>
+            <button id="modalDeleteBtn" class="btn-delete" title="刪除貼文">
+              🗑️ 刪除貼文
+            </button>
+          </div>
+          <div id="modalTime" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

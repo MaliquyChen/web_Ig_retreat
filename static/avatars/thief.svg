@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="thiefG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#833ab4" />
+      <stop offset="50%" stop-color="#fd1d1d" />
+      <stop offset="100%" stop-color="#fcb045" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="100" fill="url(#thiefG)" />
+  <!-- Joker / Mask icon -->
+  <path d="M 40 90 Q 100 40 160 90 Q 140 125 100 120 Q 60 125 40 90 Z" fill="#ffffff" opacity="0.95" />
+  <circle cx="75" cy="85" r="8" fill="#111" />
+  <circle cx="125" cy="85" r="8" fill="#111" />
+  <path d="M 85 108 Q 100 118 115 108" stroke="#fd1d1d" stroke-width="4" fill="none" stroke-linecap="round" />
+</svg>
