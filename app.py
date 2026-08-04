@@ -15,30 +15,53 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 CHARACTERS = {
     "char_1": {
         "id": "char_1",
-        "name": "福爾摩斯偵探",
-        "handle": "@sherlock_detective",
-        "avatar": "/static/avatars/detective.svg",
-        "bio": "破解活動終極懸案... 🕵️‍♂️🔍 | 貝克街 221B | 在下方留下你的線索！",
-        "followers": "1.2萬",
-        "following": "142"
+        "name": "羅波安",
+        "handle": "@rehoboam_king",
+        "avatar": "/static/avatars/Rehoboam.svg",
+        "bio": "猶大王國國王 👑 | 尋求國家智慧與建言 | 歡迎在下方留言互動！",
+        "followers": "3.2萬",
+        "following": "180",
+        "hashtags": ["#猶大王國", "#聆聽建言", "#國家大事", "#羅波安", "#尋求智慧"]
     },
     "char_2": {
         "id": "char_2",
-        "name": "怪盜基德",
-        "handle": "@phantom_thief_x",
-        "avatar": "/static/avatars/thief.svg",
-        "bio": "能抓到我嗎？ 🃏✨ | 偷走心靈與月光寶物 | 月光之下 🌙",
-        "followers": "9.8萬",
-        "following": "0"
+        "name": "拔示巴",
+        "handle": "@bathsheba_queen",
+        "avatar": "/static/avatars/bathsheba.svg",
+        "bio": "王后與母后 🌸👑 | 耶路撒冷王宮 | 智慧與優雅的生活記趣",
+        "followers": "5.8萬",
+        "following": "230",
+        "hashtags": ["#耶路撒冷王宮", "#母后日常", "#優雅與智慧", "#王宮生活", "#拔示巴"]
     },
     "char_3": {
         "id": "char_3",
-        "name": "特工 V",
-        "handle": "@v_cyber_agent",
-        "avatar": "/static/avatars/hacker.svg",
-        "bio": "主機防線已突破。 💻⚡ | 新東京 2099 | 請在貼文中回報加密情報",
-        "followers": "4.5萬",
-        "following": "512"
+        "name": "所羅門王",
+        "handle": "@solomon_wise",
+        "avatar": "/static/avatars/solomon.svg",
+        "bio": "智慧之王 📜👑 | 建造聖殿與箴言詩篇 | 歡迎交流與探索智慧",
+        "followers": "15.4萬",
+        "following": "300",
+        "hashtags": ["#智慧箴言", "#建造聖殿", "#求真理", "#所羅門的智慧", "#傳道書"]
+    },
+    "char_4": {
+        "id": "char_4",
+        "name": "約押將軍",
+        "handle": "@general_joab",
+        "avatar": "/static/avatars/Joab.svg",
+        "bio": "大衛王朝大將軍 ⚔️🛡️ | 勇猛統帥與王國衛士 | 軍情與線索回報",
+        "followers": "8.7萬",
+        "following": "95",
+        "hashtags": ["#大衛王朝", "#勇猛統帥", "#守護耶路撒冷", "#軍情線索", "#約押將軍"]
+    },
+    "char_5": {
+        "id": "char_5",
+        "name": "示巴女王",
+        "handle": "@queen_of_sheba",
+        "avatar": "/static/avatars/Sheba.svg",
+        "bio": "示巴王國之首 🏛️💎 | 遠道尋求智慧與真理 | 帶來香料與黃金 ✨",
+        "followers": "12.1萬",
+        "following": "150",
+        "hashtags": ["#示巴王國", "#香料與黃金", "#遠道尋求智慧", "#真理之光", "#示巴女王"]
     }
 }
 
@@ -75,9 +98,11 @@ def init_db():
     count = cursor.fetchone()[0]
     if count == 0:
         sample_posts = [
-            ("char_1", "/static/uploads/sample_clue.svg", "在主舞台入口處發現第一條關鍵線索！ #偵探 #活動線索", 42),
-            ("char_2", "/static/uploads/sample_card.svg", "預告函已經發出，你們能在時間內解開嗎？ 🃏✨ #怪盜基德", 128),
-            ("char_3", "/static/uploads/sample_code.svg", "加密網路已上線，正在掃描全場 QR Code 數據 📡 #賽博特工", 89)
+            ("char_3", "/static/uploads/sample_clue.svg", "在聖殿入口處發現第一條智慧線索！ 📜✨ #所羅門 #智慧", 99),
+            ("char_5", "/static/uploads/sample_card.svg", "帶著香料與寶石遠道而來，尋求真理與智慧！ 💎✨ #示巴女王", 156),
+            ("char_4", "/static/uploads/sample_code.svg", "王國防線巡視完畢，全軍警戒守護耶路撒冷 ⚔️🛡️ #約押將軍", 88),
+            ("char_1", "/static/uploads/sample_clue.svg", "聆聽眾人的建言，思考王國未來的道路 👑📖 #羅波安", 64),
+            ("char_2", "/static/uploads/sample_card.svg", "耶路撒冷王宮的陽光，願智慧與平安臨到大家 🌸✨ #拔示巴", 112)
         ]
         for char_id, img, cap, likes in sample_posts:
             cursor.execute(

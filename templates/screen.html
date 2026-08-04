@@ -54,6 +54,7 @@
     </div>
 
     <!-- IG 個人檔案標頭 (PROFILE HEADER) -->
+    {% if request.args.get('character_id') != 'all' %}
     <header class="profile-header">
       <div class="profile-avatar-large">
         <img src="{{ current_character.avatar }}" alt="{{ current_character.name }}">
@@ -61,12 +62,10 @@
       
       <div class="profile-details">
         <div class="profile-title-row">
-          <h1 class="profile-handle">{{ current_character.handle }}</h1>
-          <div class="profile-actions">
-            <a href="/post?character_id={{ current_character.id }}" class="btn-primary">
-              📱 建立新貼文
-            </a>
-          </div>
+          <h1 class="profile-handle" style="display: flex; align-items: center;">
+            {{ current_character.handle }}
+            <svg class="verified-badge" viewBox="0 0 24 24" aria-label="官方認證" title="官方認證"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>
+          </h1>
         </div>
 
         <div class="profile-stats">
@@ -85,11 +84,15 @@
         </div>
 
         <div class="profile-bio">
-          <div class="profile-name">{{ current_character.name }}</div>
+          <div class="profile-name" style="display: flex; align-items: center;">
+            {{ current_character.name }}
+            <svg class="verified-badge" viewBox="0 0 24 24" aria-label="官方認證" title="官方認證"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>
+          </div>
           <div class="profile-bio-text">{{ current_character.bio }}</div>
         </div>
       </div>
     </header>
+    {% endif %}
 
     <!-- 貼文分頁 -->
     <div class="feed-tabs">

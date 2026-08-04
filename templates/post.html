@@ -29,28 +29,16 @@
   <!-- 主要內容區 -->
   <main class="main-wrapper">
     
-    <!-- 快速切換角色 BAR -->
-    <div class="character-bar-wrapper">
-      <div class="character-bar-title">切換掃描角色：</div>
-      <div class="character-list">
-        {% for cid, char in characters.items() %}
-        <a href="/post?character_id={{ cid }}" class="character-chip {% if cid == character.id %}active{% endif %}">
-          <div class="avatar-ring">
-            <img src="{{ char.avatar }}" alt="{{ char.name }}" class="avatar-img">
-          </div>
-          <span class="chip-name">{{ char.name }}</span>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-
     <!-- 發文卡片 (模擬 IG 介面) -->
     <div class="post-card">
       <div class="post-card-header">
         <div class="character-info-sm">
           <img src="{{ character.avatar }}" alt="{{ character.name }}" class="avatar-sm">
           <div class="char-title-sm">
-            <span class="char-name-sm">{{ character.name }}</span>
+            <span class="char-name-sm" style="display: flex; align-items: center;">
+              {{ character.name }}
+              <svg class="verified-badge" viewBox="0 0 24 24" aria-label="官方認證" title="官方認證"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>
+            </span>
             <span class="char-handle-sm">{{ character.handle }}</span>
           </div>
         </div>
@@ -90,12 +78,17 @@
         <div class="caption-group">
           <textarea id="captionTextarea" name="caption" class="caption-textarea" placeholder="撰寫內文或輸入線索說明..."></textarea>
           
-          <!-- 快捷 Hashtag 標籤按鈕 -->
+          <!-- 實時藍色 Hashtag 預覽區 -->
+          <div id="captionPreviewWrapper" class="caption-preview-wrapper" style="display: none;">
+            <span class="preview-label">即時內文預覽：</span>
+            <div id="captionLivePreview" class="caption-live-preview"></div>
+          </div>
+
+          <!-- 快捷 Hashtag 標籤按鈕 (角色專屬風格) -->
           <div class="hashtag-pills">
-            <button type="button" class="pill-btn" data-tag="#活動現場2026">#活動現場2026</button>
-            <button type="button" class="pill-btn" data-tag="#關鍵線索">#關鍵線索</button>
-            <button type="button" class="pill-btn" data-tag="#VIP通關">#VIP通關</button>
-            <button type="button" class="pill-btn" data-tag="#解密成功">#解密成功</button>
+            {% for tag in character.get('hashtags', ['#活動現場2026', '#關鍵線索', '#VIP通關', '#解密成功']) %}
+            <button type="button" class="pill-btn" data-tag="{{ tag }}">{{ tag }}</button>
+            {% endfor %}
           </div>
         </div>
 
@@ -104,13 +97,6 @@
           分享
         </button>
       </form>
-    </div>
-
-    <!-- 連結至大螢幕 -->
-    <div style="text-align: center; margin-top: 2rem;">
-      <a href="/screen?character_id={{ character.id }}" class="btn-secondary" style="display: inline-block;">
-        🖥️ 查看 {{ character.name }} 的現場大螢幕
-      </a>
     </div>
 
   </main>

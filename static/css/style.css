@@ -896,3 +896,85 @@ button {
   width: 100%;
   gap: 0.5rem;
 }
+
+/* 官方認證藍勾勾樣式 (Instagram Verified Badge) */
+.verified-badge {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  display: inline-block;
+  vertical-align: text-bottom;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.profile-handle .verified-badge {
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+}
+
+.profile-name .verified-badge,
+.char-name-sm .verified-badge {
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+}
+
+/* Hashtag 藍色與樣式 (Blue Hashtags) */
+.hashtag {
+  color: var(--accent-blue) !important;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.hashtag:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Hashtag 快捷按鈕藍色風格 */
+.hashtag-pills .pill-btn {
+  color: var(--accent-blue);
+  background: rgba(0, 149, 246, 0.1);
+  border: 1px solid rgba(0, 149, 246, 0.3);
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.hashtag-pills .pill-btn:hover {
+  background: rgba(0, 149, 246, 0.2);
+  border-color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+/* 發文過程即時藍色 Hashtag 預覽區 */
+.caption-preview-wrapper {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.caption-live-preview {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+

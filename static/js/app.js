@@ -78,6 +78,25 @@ function initPostForm() {
     });
   }
 
+  const previewWrapper = document.getElementById('captionPreviewWrapper');
+  const livePreview = document.getElementById('captionLivePreview');
+
+  function updateLivePreview() {
+    if (!captionTextarea) return;
+    const val = captionTextarea.value;
+    if (val.trim()) {
+      if (previewWrapper) previewWrapper.style.display = 'block';
+      if (livePreview) livePreview.innerHTML = formatCaptionHashtags(val);
+    } else {
+      if (previewWrapper) previewWrapper.style.display = 'none';
+      if (livePreview) livePreview.innerHTML = '';
+    }
+  }
+
+  if (captionTextarea) {
+    captionTextarea.addEventListener('input', updateLivePreview);
+  }
+
   // 快捷 Hashtag 標籤點擊
   const pillBtns = document.querySelectorAll('.pill-btn');
   pillBtns.forEach(pill => {
@@ -86,6 +105,7 @@ function initPostForm() {
       if (captionTextarea) {
         captionTextarea.value = (captionTextarea.value.trim() + ' ' + tag).trim() + ' ';
         captionTextarea.focus();
+        updateLivePreview();
       }
     });
   });
@@ -267,11 +287,13 @@ window.openModal = function(postId) {
   const modalLikeBtn = document.getElementById('modalLikeBtn');
   const modalDeleteBtn = document.getElementById('modalDeleteBtn');
 
+  const VERIFIED_BADGE_SVG = `<svg class="verified-badge" viewBox="0 0 24 24" aria-label="官方認證" title="官方認證"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>`;
+
   if (modalImg) modalImg.src = post.image_url;
   if (modalAvatar) modalAvatar.src = post.character_avatar;
-  if (modalName) modalName.textContent = post.character_name;
+  if (modalName) modalName.innerHTML = `${post.character_name} ${VERIFIED_BADGE_SVG}`;
   if (modalHandle) modalHandle.textContent = post.character_handle;
-  if (modalCaption) modalCaption.textContent = post.caption || '未輸入內文。';
+  if (modalCaption) modalCaption.innerHTML = post.caption ? formatCaptionHashtags(post.caption) : '未輸入內文。';
   if (modalLikes) modalLikes.textContent = post.likes;
   if (modalTime) modalTime.textContent = formatDate(post.created_at);
 
@@ -342,4 +364,20 @@ function formatDate(dateStr) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '最近';
   return d.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+}
+
+/* --- Hashtag 自動高亮格式化與安全轉義 --- */
+function formatCaptionHashtags(text) {
+  if (!text) return '';
+  const escaped = escapeHtml(text);
+  // 將 # 開頭的中文、英文、數字、底線標籤轉為藍色 .hashtag 元素
+  return escaped.replace(/(#[\u4e00-\u9fa5a-zA-Z0-9_]+)/g, '<span class="hashtag">$1</span>');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
 }
