@@ -84,9 +84,9 @@
             </div>
           </div>
 
-          <!-- 獨立相機與相簿 input -->
-          <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display: none;">
-          <input type="file" id="galleryFileInput" accept="image/*" style="display: none;">
+          <!-- 獨立相機與相簿 input (相簿指定常用格式促使 iOS 拍照圖庫自動轉碼為標準 JPEG) -->
+          <input type="file" id="cameraFileInput" accept="image/jpeg,image/png,image/*" capture="environment" style="display: none;">
+          <input type="file" id="galleryFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display: none;">
           <input type="file" name="image" id="imageFileInput" style="display: none;">
         </div>
 

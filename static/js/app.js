@@ -92,15 +92,31 @@ function initPostForm() {
       compressionNotice.style.display = 'block';
     }
 
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '照片最佳化中... ⏳';
+    }
+
     try {
-      // 前端自動壓縮與縮圖，將手機 20~30MB 巨大照片最佳化至 ~500KB，避免網路逾時與上傳錯誤
-      currentProcessedFile = await compressImage(file, 1920, 1920, 0.85);
+      // 前端智慧壓縮：將相簿 20~40MB 巨大照片縮至 ~400KB，徹底消除 Failed to fetch 逾時崩潰
+      currentProcessedFile = await compressImage(file, 1600, 1600, 0.82);
     } catch (err) {
-      console.warn('前端壓縮失敗，使用原始檔案上傳:', err);
+      console.warn('前端壓縮失敗:', err);
+      // 若原檔大於 12MB 且前端無法壓縮，提醒使用者
+      if (file.size > 12 * 1024 * 1024) {
+        alert('此相簿照片原始檔案過大（超過 12MB）且格式無法在瀏覽器中壓縮，請改用現場拍照或選擇一般 JPG/PNG 照片！');
+        currentProcessedFile = null;
+        if (removePhotoBtn) removePhotoBtn.click();
+        return;
+      }
       currentProcessedFile = file;
     } finally {
       if (compressionNotice) {
         compressionNotice.style.display = 'none';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '分享';
       }
     }
   }
@@ -121,16 +137,18 @@ function initPostForm() {
     });
   }
 
-  // 即時預覽照片
+  let activePreviewUrl = null;
+
+  // 即時預覽照片 (使用 URL.createObjectURL 避免 30MB base64 字串引發記憶體耗盡)
   function showInstantPreview(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imagePreview.src = e.target.result;
-      imagePreview.style.display = 'block';
-      dropzonePrompt.style.display = 'none';
-      if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
-    };
-    reader.readAsDataURL(file);
+    if (activePreviewUrl) {
+      URL.revokeObjectURL(activePreviewUrl);
+    }
+    activePreviewUrl = URL.createObjectURL(file);
+    imagePreview.src = activePreviewUrl;
+    imagePreview.style.display = 'block';
+    dropzonePrompt.style.display = 'none';
+    if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
   }
 
   // 移除/重新選擇照片
@@ -138,6 +156,10 @@ function initPostForm() {
     removePhotoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       currentProcessedFile = null;
+      if (activePreviewUrl) {
+        URL.revokeObjectURL(activePreviewUrl);
+        activePreviewUrl = null;
+      }
       if (cameraFileInput) cameraFileInput.value = '';
       if (galleryFileInput) galleryFileInput.value = '';
       if (fileInput) fileInput.value = '';
@@ -146,6 +168,10 @@ function initPostForm() {
       dropzonePrompt.style.display = 'flex';
       removePhotoBtn.style.display = 'none';
       if (compressionNotice) compressionNotice.style.display = 'none';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '分享';
+      }
     });
   }
 
@@ -230,6 +256,10 @@ function initPostForm() {
 
       postForm.reset();
       currentProcessedFile = null;
+      if (activePreviewUrl) {
+        URL.revokeObjectURL(activePreviewUrl);
+        activePreviewUrl = null;
+      }
       if (cameraFileInput) cameraFileInput.value = '';
       if (galleryFileInput) galleryFileInput.value = '';
       imagePreview.style.display = 'none';
@@ -252,55 +282,102 @@ function initPostForm() {
   });
 }
 
-// 前端 Canvas 自動等比例縮圖與 JPEG 壓縮
-function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
-  return new Promise((resolve) => {
-    if (!file.type || file.type.includes('svg') || file.type.includes('gif')) {
+// 前端 Canvas 自動等比例縮圖與 JPEG 壓縮 (支援 createImageBitmap 與 ObjectURL 零記憶體暴增)
+function compressImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type || file.type.includes('svg') || file.type.includes('gif')) {
       return resolve(file);
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth || height > maxHeight) {
-          if (width / height > maxWidth / maxHeight) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          } else {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+    // 優先使用硬體解碼器 createImageBitmap (最快、最省記憶體)
+    if (typeof createImageBitmap === 'function') {
+      createImageBitmap(file).then((bitmap) => {
+        try {
+          let { width, height } = bitmap;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
           }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(bitmap, 0, 0, width, height);
+          bitmap.close();
+
+          canvas.toBlob((blob) => {
+            if (blob && blob.size < file.size) {
+              const fileName = (file.name || 'photo').replace(/\.[^/.]+$/, '') + '.jpg';
+              resolve(new File([blob], fileName, { type: 'image/jpeg', lastModified: Date.now() }));
+            } else {
+              resolve(file);
+            }
+          }, 'image/jpeg', quality);
+        } catch (canvasErr) {
+          bitmap.close();
+          fallbackImageCompress(file, maxWidth, maxHeight, quality, resolve, reject);
         }
+      }).catch(() => {
+        fallbackImageCompress(file, maxWidth, maxHeight, quality, resolve, reject);
+      });
+      return;
+    }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const fileName = (file.name || 'photo').replace(/\.[^/.]+$/, '') + '.jpg';
-            const compressedFile = new File([blob], fileName, {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            });
-            resolve(compressedFile);
-          } else {
-            resolve(file);
-          }
-        }, 'image/jpeg', quality);
-      };
-      img.onerror = () => resolve(file);
-      img.src = e.target.result;
-    };
-    reader.onerror = () => resolve(file);
-    reader.readAsDataURL(file);
+    fallbackImageCompress(file, maxWidth, maxHeight, quality, resolve, reject);
   });
+}
+
+function fallbackImageCompress(file, maxWidth, maxHeight, quality, resolve, reject) {
+  const objectUrl = URL.createObjectURL(file);
+  const img = new Image();
+
+  img.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+    try {
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width / height > maxWidth / maxHeight) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (blob && blob.size < file.size) {
+          const fileName = (file.name || 'photo').replace(/\.[^/.]+$/, '') + '.jpg';
+          resolve(new File([blob], fileName, { type: 'image/jpeg', lastModified: Date.now() }));
+        } else {
+          resolve(file);
+        }
+      }, 'image/jpeg', quality);
+    } catch (e) {
+      resolve(file);
+    }
+  };
+
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    reject(new Error('瀏覽器無法解析此相片格式'));
+  };
+
+  img.src = objectUrl;
 }
 
 /* --- 大螢幕輪詢與即時更新 (/screen) --- */

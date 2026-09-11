@@ -10,12 +10,12 @@ from PIL import Image, ImageOps
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'event-ig-secret-key-2026'
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload limit
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif'}
+app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64MB max upload limit
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'bmp'}
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
-    return jsonify({"success": False, "error": "照片檔案過大（超過 50MB 限制），請選擇較小的照片！"}), 413
+    return jsonify({"success": False, "error": "照片檔案過大（超過 64MB 限制），請選擇較小的照片！"}), 413
 
 # 中文版預設活動角色基礎資料
 DEFAULT_CHARACTERS = {
