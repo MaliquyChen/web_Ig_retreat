@@ -40,9 +40,7 @@ function initPostForm() {
 
   const fileInput = document.getElementById('imageFileInput');
   const cameraFileInput = document.getElementById('cameraFileInput');
-  const galleryFileInput = document.getElementById('galleryFileInput');
   const cameraBtn = document.getElementById('cameraTriggerBtn');
-  const galleryBtn = document.getElementById('galleryTriggerBtn');
   const dropzone = document.getElementById('imageDropzone');
   const imagePreview = document.getElementById('imagePreview');
   const dropzonePrompt = document.getElementById('dropzonePrompt');
@@ -54,7 +52,7 @@ function initPostForm() {
 
   let currentProcessedFile = null;
 
-  // 點擊「📸 現場拍照」按鈕
+  // 點擊「📸 開啟相機拍照」按鈕
   if (cameraBtn && cameraFileInput) {
     cameraBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -62,27 +60,19 @@ function initPostForm() {
     });
   }
 
-  // 點擊「🖼️ 從相簿選取」按鈕
-  if (galleryBtn && galleryFileInput) {
-    galleryBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      galleryFileInput.click();
-    });
-  }
-
-  // 點擊上傳區外圍空白處（若尚未選擇照片），預設開啟相簿
+  // 點擊上傳拍照區外圍空白處，直接開啟相機
   if (dropzone) {
     dropzone.addEventListener('click', (e) => {
-      if (e.target.closest('#cameraTriggerBtn') || e.target.closest('#galleryTriggerBtn') || e.target.closest('#removePhotoBtn')) {
+      if (e.target.closest('#cameraTriggerBtn') || e.target.closest('#removePhotoBtn')) {
         return;
       }
-      if (!currentProcessedFile && galleryFileInput) {
-        galleryFileInput.click();
+      if (!currentProcessedFile && cameraFileInput) {
+        cameraFileInput.click();
       }
     });
   }
 
-  // 處理照片選取後的即時預覽與壓縮
+  // 處理拍照選取後的即時預覽與最佳化壓縮
   async function handleSelectedFile(file) {
     if (!file) return;
 
@@ -98,17 +88,10 @@ function initPostForm() {
     }
 
     try {
-      // 前端智慧壓縮：將相簿 20~40MB 巨大照片縮至 ~400KB，徹底消除 Failed to fetch 逾時崩潰
+      // 前端智慧壓縮：將相機照片最佳化至適當大小，確保快速上傳
       currentProcessedFile = await compressImage(file, 1600, 1600, 0.82);
     } catch (err) {
-      console.warn('前端壓縮失敗:', err);
-      // 若原檔大於 12MB 且前端無法壓縮，提醒使用者
-      if (file.size > 12 * 1024 * 1024) {
-        alert('此相簿照片原始檔案過大（超過 12MB）且格式無法在瀏覽器中壓縮，請改用現場拍照或選擇一般 JPG/PNG 照片！');
-        currentProcessedFile = null;
-        if (removePhotoBtn) removePhotoBtn.click();
-        return;
-      }
+      console.warn('前端壓縮失敗，使用原始拍照檔案:', err);
       currentProcessedFile = file;
     } finally {
       if (compressionNotice) {
@@ -129,17 +112,9 @@ function initPostForm() {
     });
   }
 
-  if (galleryFileInput) {
-    galleryFileInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleSelectedFile(e.target.files[0]);
-      }
-    });
-  }
-
   let activePreviewUrl = null;
 
-  // 即時預覽照片 (使用 URL.createObjectURL 避免 30MB base64 字串引發記憶體耗盡)
+  // 即時預覽照片 (使用 URL.createObjectURL 避免記憶體暴增)
   function showInstantPreview(file) {
     if (activePreviewUrl) {
       URL.revokeObjectURL(activePreviewUrl);
@@ -151,7 +126,7 @@ function initPostForm() {
     if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
   }
 
-  // 移除/重新選擇照片
+  // 移除/重新拍照
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -161,7 +136,6 @@ function initPostForm() {
         activePreviewUrl = null;
       }
       if (cameraFileInput) cameraFileInput.value = '';
-      if (galleryFileInput) galleryFileInput.value = '';
       if (fileInput) fileInput.value = '';
       imagePreview.src = '';
       imagePreview.style.display = 'none';
@@ -212,7 +186,7 @@ function initPostForm() {
     e.preventDefault();
 
     if (!currentProcessedFile) {
-      alert('請先選擇相簿照片或拍攝一張照片！');
+      alert('請先拍攝一張現場照片！');
       return;
     }
 
@@ -235,7 +209,7 @@ function initPostForm() {
         data = await response.json();
       } catch (jsonErr) {
         if (response.status === 413) {
-          throw new Error('照片檔案過大（超過限制），請選擇較小尺寸的照片！');
+          throw new Error('照片檔案過大（超過限制），請重新拍攝照片！');
         } else {
           throw new Error(`伺服器異常 (狀態碼: ${response.status})，請確認連線或稍後再試。`);
         }
@@ -261,7 +235,6 @@ function initPostForm() {
         activePreviewUrl = null;
       }
       if (cameraFileInput) cameraFileInput.value = '';
-      if (galleryFileInput) galleryFileInput.value = '';
       imagePreview.style.display = 'none';
       dropzonePrompt.style.display = 'flex';
       if (removePhotoBtn) removePhotoBtn.style.display = 'none';

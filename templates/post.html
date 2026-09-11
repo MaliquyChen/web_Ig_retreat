@@ -56,9 +56,9 @@
           🎉 貼文發布成功！可至現場大螢幕即時查看！
         </div>
 
-        <!-- 圖片上傳區塊 -->
+        <!-- 圖片拍照區塊 (僅支援現場拍照) -->
         <div class="image-upload-dropzone" id="imageDropzone">
-          <button type="button" class="remove-photo-btn" id="removePhotoBtn" title="移除照片">✕ 重新選擇</button>
+          <button type="button" class="remove-photo-btn" id="removePhotoBtn" title="移除照片">✕ 重新拍照</button>
           
           <img id="imagePreview" class="image-preview" alt="預覽照片">
 
@@ -67,26 +67,22 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <p style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin: 0;">選擇照片方式</p>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">點擊下方按鈕進行現場拍照或從手機相簿挑選</p>
+            <p style="font-weight: 700; font-size: 1.15rem; color: var(--text-primary); margin: 0;">現場拍照上傳</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">點擊此處立即開啟相機拍照</p>
             
-            <div class="upload-source-btns">
+            <div class="upload-source-btns" style="margin-top: 0.5rem;">
               <button type="button" id="cameraTriggerBtn" class="btn-primary upload-choice-btn">
-                📸 現場拍照
-              </button>
-              <button type="button" id="galleryTriggerBtn" class="btn-secondary upload-choice-btn">
-                🖼️ 從相簿選取
+                📸 開啟相機拍照
               </button>
             </div>
             
             <div id="compressionNotice" style="display: none; font-size: 0.8rem; color: var(--accent-blue); margin-top: 0.5rem;">
-              ⚡ 照片處理與自動最佳化中...
+              ⚡ 照片最佳化處理中...
             </div>
           </div>
 
-          <!-- 獨立相機與相簿 input (相簿指定常用格式促使 iOS 拍照圖庫自動轉碼為標準 JPEG) -->
-          <input type="file" id="cameraFileInput" accept="image/jpeg,image/png,image/*" capture="environment" style="display: none;">
-          <input type="file" id="galleryFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display: none;">
+          <!-- 現場相機專屬 input -->
+          <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display: none;">
           <input type="file" name="image" id="imageFileInput" style="display: none;">
         </div>
 
