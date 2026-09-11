@@ -39,42 +39,113 @@ function initPostForm() {
   if (!postForm) return;
 
   const fileInput = document.getElementById('imageFileInput');
+  const cameraFileInput = document.getElementById('cameraFileInput');
+  const galleryFileInput = document.getElementById('galleryFileInput');
+  const cameraBtn = document.getElementById('cameraTriggerBtn');
+  const galleryBtn = document.getElementById('galleryTriggerBtn');
   const dropzone = document.getElementById('imageDropzone');
   const imagePreview = document.getElementById('imagePreview');
   const dropzonePrompt = document.getElementById('dropzonePrompt');
+  const compressionNotice = document.getElementById('compressionNotice');
   const removePhotoBtn = document.getElementById('removePhotoBtn');
   const captionTextarea = document.getElementById('captionTextarea');
   const submitBtn = document.getElementById('submitBtn');
   const successBanner = document.getElementById('successBanner');
 
-  if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        showPreview(file);
+  let currentProcessedFile = null;
+
+  // 點擊「📸 現場拍照」按鈕
+  if (cameraBtn && cameraFileInput) {
+    cameraBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cameraFileInput.click();
+    });
+  }
+
+  // 點擊「🖼️ 從相簿選取」按鈕
+  if (galleryBtn && galleryFileInput) {
+    galleryBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      galleryFileInput.click();
+    });
+  }
+
+  // 點擊上傳區外圍空白處（若尚未選擇照片），預設開啟相簿
+  if (dropzone) {
+    dropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#cameraTriggerBtn') || e.target.closest('#galleryTriggerBtn') || e.target.closest('#removePhotoBtn')) {
+        return;
+      }
+      if (!currentProcessedFile && galleryFileInput) {
+        galleryFileInput.click();
       }
     });
   }
 
-  function showPreview(file) {
+  // 處理照片選取後的即時預覽與壓縮
+  async function handleSelectedFile(file) {
+    if (!file) return;
+
+    showInstantPreview(file);
+
+    if (compressionNotice) {
+      compressionNotice.style.display = 'block';
+    }
+
+    try {
+      // 前端自動壓縮與縮圖，將手機 20~30MB 巨大照片最佳化至 ~500KB，避免網路逾時與上傳錯誤
+      currentProcessedFile = await compressImage(file, 1920, 1920, 0.85);
+    } catch (err) {
+      console.warn('前端壓縮失敗，使用原始檔案上傳:', err);
+      currentProcessedFile = file;
+    } finally {
+      if (compressionNotice) {
+        compressionNotice.style.display = 'none';
+      }
+    }
+  }
+
+  if (cameraFileInput) {
+    cameraFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleSelectedFile(e.target.files[0]);
+      }
+    });
+  }
+
+  if (galleryFileInput) {
+    galleryFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleSelectedFile(e.target.files[0]);
+      }
+    });
+  }
+
+  // 即時預覽照片
+  function showInstantPreview(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.src = e.target.result;
       imagePreview.style.display = 'block';
       dropzonePrompt.style.display = 'none';
-      if (removePhotoBtn) removePhotoBtn.style.display = 'flex';
+      if (removePhotoBtn) removePhotoBtn.style.display = 'inline-flex';
     };
     reader.readAsDataURL(file);
   }
 
+  // 移除/重新選擇照片
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      fileInput.value = '';
+      currentProcessedFile = null;
+      if (cameraFileInput) cameraFileInput.value = '';
+      if (galleryFileInput) galleryFileInput.value = '';
+      if (fileInput) fileInput.value = '';
       imagePreview.src = '';
       imagePreview.style.display = 'none';
       dropzonePrompt.style.display = 'flex';
       removePhotoBtn.style.display = 'none';
+      if (compressionNotice) compressionNotice.style.display = 'none';
     });
   }
 
@@ -114,12 +185,15 @@ function initPostForm() {
   postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    if (!fileInput.files || fileInput.files.length === 0) {
-      alert('請先選擇或拍攝一張照片！');
+    if (!currentProcessedFile) {
+      alert('請先選擇相簿照片或拍攝一張照片！');
       return;
     }
 
     const formData = new FormData(postForm);
+    // 加入前端最佳化後的高品質相片
+    formData.set('image', currentProcessedFile, currentProcessedFile.name || 'upload.jpg');
+
     submitBtn.disabled = true;
     const originalText = submitBtn.textContent;
     submitBtn.textContent = '發布中... ⏳';
@@ -130,35 +204,102 @@ function initPostForm() {
         body: formData
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        if (successBanner) {
-          successBanner.style.display = 'block';
-          successBanner.scrollIntoView({ behavior: 'smooth' });
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        if (response.status === 413) {
+          throw new Error('照片檔案過大（超過限制），請選擇較小尺寸的照片！');
+        } else {
+          throw new Error(`伺服器異常 (狀態碼: ${response.status})，請確認連線或稍後再試。`);
         }
+      }
 
-        postForm.reset();
-        imagePreview.style.display = 'none';
-        dropzonePrompt.style.display = 'flex';
-        if (removePhotoBtn) removePhotoBtn.style.display = 'none';
-        
-        submitBtn.textContent = '已發布！✨';
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
-        }, 2000);
-      } else {
-        alert(data.error || '貼文發布失敗，請稍後重試。');
+      if (!response.ok || !data.success) {
+        alert(data && data.error ? data.error : '貼文發布失敗，請稍後重試。');
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
+        return;
       }
+
+      // 發布成功
+      if (successBanner) {
+        successBanner.style.display = 'block';
+        successBanner.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      postForm.reset();
+      currentProcessedFile = null;
+      if (cameraFileInput) cameraFileInput.value = '';
+      if (galleryFileInput) galleryFileInput.value = '';
+      imagePreview.style.display = 'none';
+      dropzonePrompt.style.display = 'flex';
+      if (removePhotoBtn) removePhotoBtn.style.display = 'none';
+      if (previewWrapper) previewWrapper.style.display = 'none';
+      
+      submitBtn.textContent = '已發布！✨';
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }, 2000);
+
     } catch (err) {
       console.error('上傳錯誤:', err);
-      alert('上傳發生錯誤，請檢查網路連線。');
+      alert(err.message || '上傳發生錯誤，請檢查網路連線或稍後重試。');
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     }
+  });
+}
+
+// 前端 Canvas 自動等比例縮圖與 JPEG 壓縮
+function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file.type || file.type.includes('svg') || file.type.includes('gif')) {
+      return resolve(file);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const fileName = (file.name || 'photo').replace(/\.[^/.]+$/, '') + '.jpg';
+            const compressedFile = new File([blob], fileName, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
   });
 }
 

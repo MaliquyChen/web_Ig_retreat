@@ -58,7 +58,7 @@
 
         <!-- 圖片上傳區塊 -->
         <div class="image-upload-dropzone" id="imageDropzone">
-          <button type="button" class="remove-photo-btn" id="removePhotoBtn" title="移除照片">✕</button>
+          <button type="button" class="remove-photo-btn" id="removePhotoBtn" title="移除照片">✕ 重新選擇</button>
           
           <img id="imagePreview" class="image-preview" alt="預覽照片">
 
@@ -67,11 +67,27 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <p style="font-weight: 600; font-size: 1.05rem;">點擊選擇照片或拍照</p>
-            <p style="font-size: 0.8rem;">支援現場拍照或從相簿選擇</p>
+            <p style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin: 0;">選擇照片方式</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">點擊下方按鈕進行現場拍照或從手機相簿挑選</p>
+            
+            <div class="upload-source-btns">
+              <button type="button" id="cameraTriggerBtn" class="btn-primary upload-choice-btn">
+                📸 現場拍照
+              </button>
+              <button type="button" id="galleryTriggerBtn" class="btn-secondary upload-choice-btn">
+                🖼️ 從相簿選取
+              </button>
+            </div>
+            
+            <div id="compressionNotice" style="display: none; font-size: 0.8rem; color: var(--accent-blue); margin-top: 0.5rem;">
+              ⚡ 照片處理與自動最佳化中...
+            </div>
           </div>
 
-          <input type="file" name="image" id="imageFileInput" class="file-input" accept="image/*">
+          <!-- 獨立相機與相簿 input -->
+          <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display: none;">
+          <input type="file" id="galleryFileInput" accept="image/*" style="display: none;">
+          <input type="file" name="image" id="imageFileInput" style="display: none;">
         </div>
 
         <!-- 貼文內文輸入區 -->

@@ -5,12 +5,17 @@ import json
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from werkzeug.utils import secure_filename
+from PIL import Image, ImageOps
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'event-ig-secret-key-2026'
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload limit
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload limit
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif'}
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({"success": False, "error": "照片檔案過大（超過 50MB 限制），請選擇較小的照片！"}), 413
 
 # 中文版預設活動角色基礎資料
 DEFAULT_CHARACTERS = {
@@ -379,6 +384,16 @@ def api_create_post():
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(save_path)
         
+        # 使用 Pillow 自動校正手機拍照之 EXIF 方向與最佳化
+        try:
+            with Image.open(save_path) as img:
+                img = ImageOps.exif_transpose(img)
+                if img.mode in ('RGBA', 'P') and ext in ('jpg', 'jpeg', 'heic', 'heif'):
+                    img = img.convert('RGB')
+                img.save(save_path, quality=90, optimize=True)
+        except Exception as e:
+            app.logger.warning(f"PIL 處理圖片失敗 (保留原圖): {e}")
+
         image_url = f"/static/uploads/{unique_filename}"
         
         conn = get_db_connection()
@@ -403,7 +418,7 @@ def api_create_post():
             }
         })
         
-    return jsonify({"success": False, "error": "不支援的圖片格式，僅支援 JPG, PNG, WEBP, GIF"}), 400
+    return jsonify({"success": False, "error": "不支援的圖片格式，支援 JPG, PNG, WEBP, GIF, HEIC"}), 400
 
 @app.route('/api/posts/<int:post_id>/like', methods=['POST'])
 def api_like_post(post_id):
