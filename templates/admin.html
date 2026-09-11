@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人物自我介紹管理後台 - Instagram 角色互動系統</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <nav class="app-navbar">
+    <div class="navbar-container">
+      <a href="/" class="brand-logo">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        <span>活動後台管理</span>
+      </a>
+      <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+        <a href="/" class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.88rem;">🏠 主控大廳</a>
+        <a href="/screen?character_id=all" class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.88rem;">📺 大螢幕牆</a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="切換深色/淺色主題">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主內容區 -->
+  <main class="main-wrapper" style="max-width: 1100px;">
+    
+    <!-- 頁面標題 -->
+    <div style="margin-bottom: 2rem;">
+      <div class="admin-header-badge">
+        <span>⚙️ 活動設定</span>
+        <span>•</span>
+        <span>即時同步</span>
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;" class="gradient-text">
+        人物自我介紹與檔案管理
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.95rem;">
+        自訂各活動角色的自我介紹 (Bio)、暱稱與常用 Hashtags。更新後大螢幕個人檔案牆與手機端將即時同步！
+      </p>
+    </div>
+
+    <!-- 角色切換 Tab 標籤列 -->
+    <div class="admin-tabs" id="characterTabs">
+      {% for cid, char in characters.items() %}
+      <button 
+        type="button" 
+        class="admin-tab-btn {% if cid == active_id %}active{% endif %}" 
+        data-id="{{ cid }}"
+        onclick="switchCharacter('{{ cid }}')">
+        <img src="{{ char.avatar }}" alt="{{ char.name }}" class="admin-tab-avatar">
+        <span>{{ char.name }}</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- 編輯器與即時預覽兩欄佈局 -->
+    {% for cid, char in characters.items() %}
+    <div class="admin-grid-layout character-panel" id="panel-{{ cid }}" style="{% if cid != active_id %}display: none;{% endif %}">
+      
+      <!-- 左欄：編輯表單 -->
+      <div class="admin-card">
+        <div class="admin-card-title">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            ✏️ 編輯資料：<strong style="color: var(--accent-blue);">{{ char.name }}</strong>
+          </span>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">ID: {{ cid }}</span>
+        </div>
+
+        <form id="form-{{ cid }}" onsubmit="saveCharacter(event, '{{ cid }}')">
+          
+          <!-- 角色名稱與 Handle -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                角色姓名 / 稱號
+              </label>
+              <input 
+                type="text" 
+                name="name" 
+                class="admin-input" 
+                value="{{ char.name }}" 
+                required 
+                oninput="updatePreview('{{ cid }}')">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                IG 帳號 (Handle)
+              </label>
+              <input 
+                type="text" 
+                name="handle" 
+                class="admin-input" 
+                value="{{ char.handle }}" 
+                required 
+                oninput="updatePreview('{{ cid }}')">
+            </div>
+          </div>
+
+          <!-- 自我介紹 (核心重點功能) -->
+          <div class="admin-form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">
+                📝 人物自我介紹 (Bio)
+              </label>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" id="bioCounter-{{ cid }}">0 字元</span>
+            </div>
+            
+            <textarea 
+              name="bio" 
+              class="admin-textarea" 
+              rows="4" 
+              placeholder="輸入該角色的自我介紹、背景說明、名言或解密提示..."
+              required
+              oninput="updatePreview('{{ cid }}')">{{ char.bio }}</textarea>
+            
+            <!-- 快速表情符號工具列 -->
+            <div style="margin-top: 0.5rem;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; display: block;">點擊插入 Emoji 表情：</span>
+              <div class="emoji-quick-bar">
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '👑')">👑</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '📜')">📜</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '⚔️')">⚔️</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '🛡️')">🛡️</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '🌸')">🌸</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '💎')">💎</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '✨')">✨</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '🏛️')">🏛️</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '📖')">📖</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '💡')">💡</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '🔍')">🔍</button>
+                <button type="button" class="emoji-btn" onclick="insertEmoji('{{ cid }}', '🕊️')">🕊️</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 粉絲與追蹤數據 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                粉絲數 (Followers)
+              </label>
+              <input 
+                type="text" 
+                name="followers" 
+                class="admin-input" 
+                value="{{ char.followers }}" 
+                oninput="updatePreview('{{ cid }}')">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                追蹤中 (Following)
+              </label>
+              <input 
+                type="text" 
+                name="following" 
+                class="admin-input" 
+                value="{{ char.following }}" 
+                oninput="updatePreview('{{ cid }}')">
+            </div>
+          </div>
+
+          <!-- 常用活動 Hashtags -->
+          <div class="admin-form-group">
+            <label style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+              🏷️ 專屬 Hashtags 標籤 (以逗號隔開)
+            </label>
+            <input 
+              type="text" 
+              name="hashtags" 
+              class="admin-input" 
+              value="{{ char.hashtags|join(', ') }}" 
+              placeholder="#標籤1, #標籤2, #標籤3"
+              oninput="updatePreview('{{ cid }}')">
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+              標籤將自動成為此角色手機發文頁面 (`/post`) 的快捷按鈕。
+            </p>
+          </div>
+
+          <!-- 操作按鈕 -->
+          <div class="admin-actions-row">
+            <button type="submit" class="btn-primary" id="saveBtn-{{ cid }}" style="padding: 0.75rem 1.75rem;">
+              💾 儲存修改
+            </button>
+            <button 
+              type="button" 
+              class="btn-secondary" 
+              onclick="resetToDefault('{{ cid }}')" 
+              style="padding: 0.75rem 1.25rem;">
+              🔄 恢復預設自介
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 右欄：大螢幕 IG 即時呈現效果預覽 -->
+      <div class="admin-card" style="position: sticky; top: 80px;">
+        <div class="admin-card-title">
+          <span>👀 大螢幕效果預覽</span>
+          <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: normal;">即時連動</span>
+        </div>
+
+        <div class="preview-box">
+          <!-- 模擬 Profile Header -->
+          <div style="display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.25rem;">
+            <img src="{{ char.avatar }}" alt="{{ char.name }}" style="width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border-color); object-fit: cover;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 1.15rem;">
+                <span id="previewHandle-{{ cid }}">{{ char.handle }}</span>
+                <svg class="verified-badge" viewBox="0 0 24 24"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>
+              </div>
+              
+              <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                <span><strong style="color: var(--text-primary);" id="previewFollowers-{{ cid }}">{{ char.followers }}</strong> 粉絲</span>
+                <span><strong style="color: var(--text-primary);" id="previewFollowing-{{ cid }}">{{ char.following }}</strong> 追蹤中</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 角色名稱與自我介紹預覽 -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+            <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem;">
+              <span id="previewName-{{ cid }}">{{ char.name }}</span>
+              <svg class="verified-badge" viewBox="0 0 24 24"><path fill="#0095f6" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 4 .495 0 .965-.084 1.4-.238 1.55 1.273 2.92 2.148 4.5 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.87 3.9l-4.13-4.13 1.41-1.41 2.72 2.72 6.59-6.59 1.41 1.41-8 8z"/></svg>
+            </div>
+            
+            <div 
+              id="previewBio-{{ cid }}" 
+              style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); white-space: pre-line; word-break: break-word;">
+              {{ char.bio }}
+            </div>
+          </div>
+
+          <!-- Hashtags 標籤預覽 -->
+          <div style="margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.85rem;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">發文快捷按鈕預覽：</span>
+            <div class="hashtag-pills" id="previewPills-{{ cid }}">
+              {% for tag in char.hashtags %}
+              <span class="pill-btn">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- 快速跳轉測試連結 -->
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+          <a href="/post?character_id={{ cid }}" target="_blank" class="btn-primary" style="flex: 1; justify-content: center; font-size: 0.88rem;">
+            📱 測試手機發文
+          </a>
+          <a href="/screen?character_id={{ cid }}" target="_blank" class="btn-secondary" style="flex: 1; justify-content: center; font-size: 0.88rem;">
+            🖥️ 開啟個人檔案
+          </a>
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+
+  </main>
+
+  <!-- 浮動提示訊息 Toast -->
+  <div id="toastMessage" class="toast-message">
+    <span id="toastIcon">✅</span>
+    <span id="toastText">儲存成功！</span>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    // 角色切換 Tab
+    function switchCharacter(charId) {
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-id') === charId);
+      });
+      document.querySelectorAll('.character-panel').forEach(panel => {
+        panel.style.display = panel.id === 'panel-' + charId ? 'grid' : 'none';
+      });
+      
+      // 更新網址 Query 不重整頁面
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('character_id', charId);
+      window.history.replaceState({}, '', newUrl);
+
+      updateBioCounter(charId);
+    }
+
+    // 即時預覽更新
+    function updatePreview(charId) {
+      const form = document.getElementById('form-' + charId);
+      if (!form) return;
+
+      const nameVal = form.name.value;
+      const handleVal = form.handle.value;
+      const bioVal = form.bio.value;
+      const followersVal = form.followers.value;
+      const followingVal = form.following.value;
+      const hashtagsVal = form.hashtags.value;
+
+      document.getElementById('previewName-' + charId).textContent = nameVal;
+      document.getElementById('previewHandle-' + charId).textContent = handleVal;
+      document.getElementById('previewBio-' + charId).textContent = bioVal;
+      document.getElementById('previewFollowers-' + charId).textContent = followersVal;
+      document.getElementById('previewFollowing-' + charId).textContent = followingVal;
+
+      updateBioCounter(charId);
+
+      // 更新 Hashtag Pills
+      const pillsContainer = document.getElementById('previewPills-' + charId);
+      if (pillsContainer) {
+        const tags = hashtagsVal.replace(/\n/g, ',').replace(/，/g, ',').split(',')
+          .map(t => t.trim())
+          .filter(t => t.length > 0)
+          .map(t => t.startsWith('#') ? t : '#' + t);
+        
+        pillsContainer.innerHTML = tags.map(t => `<span class="pill-btn">${t}</span>`).join('');
+      }
+    }
+
+    function updateBioCounter(charId) {
+      const form = document.getElementById('form-' + charId);
+      const counter = document.getElementById('bioCounter-' + charId);
+      if (form && counter) {
+        counter.textContent = form.bio.value.length + ' 字元';
+      }
+    }
+
+    // 插入表情符號到 Bio
+    function insertEmoji(charId, emoji) {
+      const form = document.getElementById('form-' + charId);
+      if (!form) return;
+      const textarea = form.bio;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      textarea.value = text.substring(0, start) + emoji + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+      updatePreview(charId);
+    }
+
+    // 儲存角色設定
+    async function saveCharacter(e, charId) {
+      e.preventDefault();
+      const form = document.getElementById('form-' + charId);
+      const submitBtn = document.getElementById('saveBtn-' + charId);
+      const originalText = submitBtn.innerHTML;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '儲存中... ⏳';
+
+      const payload = {
+        name: form.name.value.trim(),
+        handle: form.handle.value.trim(),
+        bio: form.bio.value.trim(),
+        followers: form.followers.value.trim(),
+        following: form.following.value.trim(),
+        hashtags: form.hashtags.value
+      };
+
+      try {
+        const response = await fetch('/api/characters/' + charId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast('✅ ' + data.message);
+          submitBtn.innerHTML = '已儲存！✨';
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          }, 1500);
+        } else {
+          showToast('❌ ' + (data.error || '儲存失敗'), true);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      } catch (err) {
+        console.error('儲存失敗:', err);
+        showToast('❌ 連線異常，請稍後重試', true);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    }
+
+    // 恢復預設自我介紹
+    async function resetToDefault(charId) {
+      if (!confirm('確定要將此角色的自我介紹恢復為系統預設值嗎？')) return;
+
+      try {
+        const response = await fetch('/api/characters/' + charId + '/reset', {
+          method: 'POST'
+        });
+        const data = await response.json();
+        if (data.success) {
+          showToast('🔄 ' + data.message);
+          const char = data.character;
+          const form = document.getElementById('form-' + charId);
+          if (form) {
+            form.name.value = char.name;
+            form.handle.value = char.handle;
+            form.bio.value = char.bio;
+            form.followers.value = char.followers;
+            form.following.value = char.following;
+            form.hashtags.value = char.hashtags.join(', ');
+            updatePreview(charId);
+          }
+        } else {
+          showToast('❌ ' + (data.error || '重設失敗'), true);
+        }
+      } catch (err) {
+        console.error('重設失敗:', err);
+        showToast('❌ 連線異常，請稍後重試', true);
+      }
+    }
+
+    // 顯示 Toast 提示
+    function showToast(text, isError = false) {
+      const toast = document.getElementById('toastMessage');
+      const toastText = document.getElementById('toastText');
+      if (!toast) return;
+
+      toastText.textContent = text;
+      toast.className = 'toast-message show' + (isError ? ' error' : '');
+
+      setTimeout(() => {
+        toast.className = 'toast-message';
+      }, 3500);
+    }
+
+    // 初始化所有字元計數
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.character-panel').forEach(panel => {
+        const cid = panel.id.replace('panel-', '');
+        updateBioCounter(cid);
+      });
+    });
+  </script>
+</body>
+</html>

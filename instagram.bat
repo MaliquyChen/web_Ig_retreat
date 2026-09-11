@@ -7,6 +7,7 @@ echo ==========================================
 echo.
 echo 提示：
 echo - 後台控制中心: http://127.0.0.1:5000/
+echo - 人物自介管理: http://127.0.0.1:5000/admin
 echo - 大螢幕顯示頁: http://127.0.0.1:5000/screen?character_id=all
 echo.
 echo 正在啟動伺服器，請勿關閉此視窗...

@@ -17,7 +17,8 @@
         </svg>
         <span class="gradient-text">Instagram 活動大廳</span>
       </a>
-      <div class="nav-actions">
+      <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+        <a href="/admin" class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.88rem;">⚙️ 角色自介後台</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="切換深色/淺色主題">
           <span id="themeIcon">☀️</span>
         </button>
@@ -30,19 +31,31 @@
     <div style="text-align: center; margin-bottom: 2.5rem;">
       <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;" class="gradient-text">活動現場主控中心</h1>
       <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; font-size: 1rem;">
-        參加者掃描角色 QR Code 即刻開啟模擬 IG 發文頁；主控台可直接切換大螢幕投影！
+        參加者掃描角色 QR Code 即刻開啟模擬 IG 發文頁；主控台可直接切換大螢幕投影與編輯人物自介！
       </p>
     </div>
 
-    <!-- 快速開啟大螢幕 -->
-    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.25rem;">📺 現場大螢幕 IG 投影牆</h3>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">開啟全螢幕個人檔案牆，支援動態即時同步與放大燈箱互動。</p>
+    <!-- 快速操作區塊 (大螢幕牆 & 角色自介後台) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+        <div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.25rem;">📺 現場大螢幕 IG 投影牆</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">開啟全螢幕個人檔案牆，支援動態即時同步與放大燈箱互動。</p>
+        </div>
+        <a href="/screen?character_id=all" class="btn-primary" style="padding: 0.75rem 1.25rem; font-size: 0.95rem; text-align: center; justify-content: center;">
+          開啟大螢幕投影頁面
+        </a>
       </div>
-      <a href="/screen?character_id=char_1" class="btn-primary" style="padding: 0.75rem 1.5rem; font-size: 1rem;">
-        開啟大螢幕投影頁面
-      </a>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+        <div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.25rem;">⚙️ 人物自我介紹管理後台</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">自訂各角色的 Bio 自我介紹、暱稱、粉絲數據與專屬 Hashtags。</p>
+        </div>
+        <a href="/admin" class="btn-secondary" style="padding: 0.75rem 1.25rem; font-size: 0.95rem; text-align: center; justify-content: center;">
+          進入人物自介管理
+        </a>
+      </div>
     </div>
 
     <!-- 角色測試與 QR CODE 列表 -->
@@ -73,6 +86,9 @@
           </a>
           <a href="/screen?character_id={{ cid }}" class="btn-secondary" style="justify-content: center; width: 100%; text-align: center;">
             🖥️ 檢視 IG 個人檔案
+          </a>
+          <a href="/admin?character_id={{ cid }}" class="btn-secondary" style="justify-content: center; width: 100%; text-align: center; border-color: rgba(0, 149, 246, 0.3); color: var(--accent-blue);">
+            ✏️ 編輯自我介紹
           </a>
         </div>
       </div>
